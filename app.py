@@ -20,7 +20,7 @@ st.caption(
 with st.sidebar:
     st.header("About")
     st.markdown(
-        "- **LLM:** Gemini 1.5 Flash\n"
+        "- **LLM:** Groq (Llama 3.3 70B)\n"
         "- **Embeddings:** MiniLM (local)\n"
         "- **Vector store:** FAISS (local)\n"
         "- **Docs:** `data/` folder"

@@ -1,4 +1,4 @@
-"""RAG logic: load the FAISS index and answer questions with Gemini."""
+"""RAG logic: load the FAISS index and answer questions with Groq/Llama."""
 
 from __future__ import annotations
 
@@ -11,14 +11,14 @@ from dotenv import load_dotenv
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
 ROOT = Path(__file__).parent
 INDEX_DIR = ROOT / "vectorstore"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-LLM_MODEL = "gemini-1.5-flash"
+LLM_MODEL = "llama-3.3-70b-versatile"
 TOP_K = 4
 
 SYSTEM_PROMPT = """You are a helpful Swiggy customer-support assistant.
@@ -51,15 +51,15 @@ def _get_vectorstore() -> FAISS:
 
 
 @lru_cache(maxsize=1)
-def _get_llm() -> ChatGoogleGenerativeAI:
-    api_key = os.getenv("GOOGLE_API_KEY")
+def _get_llm() -> ChatGroq:
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError(
-            "GOOGLE_API_KEY is not set. Copy .env.example to .env and paste your key."
+            "GROQ_API_KEY is not set. Copy .env.example to .env and paste your key from https://console.groq.com/keys"
         )
-    return ChatGoogleGenerativeAI(
+    return ChatGroq(
         model=LLM_MODEL,
-        google_api_key=api_key,
+        groq_api_key=api_key,
         temperature=0.2,
     )
 
@@ -73,7 +73,7 @@ def _format_context(docs: List[Document]) -> str:
 
 
 def get_answer(question: str, history: List[Tuple[str, str]] | None = None) -> dict:
-    """Retrieve relevant chunks and ask Gemini. Returns {answer, sources}."""
+    """Retrieve relevant chunks and ask Groq. Returns {answer, sources}."""
     vs = _get_vectorstore()
     docs = vs.similarity_search(question, k=TOP_K)
     context = _format_context(docs)

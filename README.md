@@ -1,4 +1,4 @@
-# Swiggy RAG Chatbot
+    # Swiggy RAG Chatbot
 
 A Retrieval-Augmented-Generation (RAG) chatbot that answers questions about Swiggy FAQs, a sample restaurant menu, and a refund policy. Built as an internship demo project.
 
@@ -7,7 +7,7 @@ A Retrieval-Augmented-Generation (RAG) chatbot that answers questions about Swig
 | Layer | Choice | Why |
 |---|---|---|
 | UI | **Streamlit** | Single-file chat UI, one command to launch |
-| LLM | **Google Gemini 1.5 Flash** | Free API key, fast, good quality |
+| LLM | **Groq (Llama 3.3 70B)** | Free API key, very fast inference |
 | Embeddings | **MiniLM (sentence-transformers)** | Runs locally, free, ~90 MB |
 | Vector store | **FAISS** | Local file, no server to manage |
 | Orchestration | **LangChain** | Standard RAG building blocks |
@@ -18,7 +18,7 @@ A Retrieval-Augmented-Generation (RAG) chatbot that answers questions about Swig
 2. **Split** them into ~500-character chunks (with overlap so context isn't cut mid-sentence).
 3. **Embed** each chunk into a vector using MiniLM.
 4. **Store** vectors in a local FAISS index.
-5. On each question → embed the question → retrieve top-4 most similar chunks → feed them as CONTEXT into a Gemini prompt → return the grounded answer with source citations.
+5. On each question → embed the question → retrieve top-4 most similar chunks → feed them as CONTEXT into a Groq/Llama prompt → return the grounded answer with source citations.
 
 ## Setup (4 commands)
 
@@ -28,13 +28,13 @@ A Retrieval-Augmented-Generation (RAG) chatbot that answers questions about Swig
 pip install -r requirements.txt
 ```
 
-### 2. Add your free Gemini API key
+### 2. Add your free Groq API key
 
-Get a free key at https://aistudio.google.com/app/apikey (no credit card required), then:
+Get a free key at https://console.groq.com/keys (no credit card required), then:
 
 ```bash
 cp .env.example .env
-# open .env and paste your key after GOOGLE_API_KEY=
+# open .env and paste your key after GROQ_API_KEY=
 ```
 
 ### 3. Build the vector index (one-time)
@@ -68,7 +68,7 @@ Good prompts that show retrieval is working:
 ```
 rag-chatbot/
 ├── app.py             # Streamlit chat UI
-├── rag.py             # Retrieval + Gemini call
+├── rag.py             # Retrieval + Groq LLM call
 ├── ingest.py          # Builds the FAISS index from data/
 ├── data/              # Source documents (markdown)
 ├── vectorstore/       # Auto-generated FAISS index (gitignored)
@@ -81,11 +81,11 @@ rag-chatbot/
 
 - **Why RAG over fine-tuning:** cheaper, instantly updatable (just drop a new file in `data/` and re-run `ingest.py`), reduces hallucination because answers are grounded in retrieved context.
 - **Key tuning knobs:** chunk size, chunk overlap, top-k retrieval, embedding model choice, LLM temperature.
-- **Trade-offs:** MiniLM is fast & free but weaker than OpenAI/Cohere embeddings; Gemini Flash is free but rate-limited; FAISS is in-memory so doesn't scale past ~millions of vectors (you'd move to pgvector / Pinecone / Weaviate).
+- **Trade-offs:** MiniLM is fast & free but weaker than OpenAI/Cohere embeddings; Groq free tier is rate-limited per minute; FAISS is in-memory so doesn't scale past ~millions of vectors (you'd move to pgvector / Pinecone / Weaviate).
 - **What I'd add next:** PDF upload UI, conversation memory across sessions, evaluation with a small Q&A test set, Docker packaging.
 
 ## Troubleshooting
 
-- **`GOOGLE_API_KEY is not set`** → make sure `.env` exists and is in the project root.
+- **`GROQ_API_KEY is not set`** → make sure `.env` exists and is in the project root.
 - **`No index found`** → run `python ingest.py` first.
 - **Slow first question** → the embedding model loads lazily on first query; it's instant after that.
