@@ -51,3 +51,11 @@ Swiggy One members receive **priority refund processing** and extended refund el
 ## 7. Disputes
 
 If you disagree with a refund decision, you may escalate via the in-app chat. Escalations are reviewed by a senior support team within 48 hours.
+
+## 8. Max Refund
+
+Max refund can be 80% of order value or 1000 rupees (whichever is lower) 
+
+## 9. Payout Policy
+
+Max refunds can only be 50% or 500 rupees whichever is higher

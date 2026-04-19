@@ -6,7 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from rag import get_answer
+from rag import get_answer, _get_vectorstore, _get_embeddings
 from ingest import build_index, INDEX_DIR
 
 st.set_page_config(page_title="Swiggy RAG Chatbot", page_icon="🍔", layout="wide")
@@ -40,10 +40,19 @@ with st.sidebar:
     if st.button("🔄 Rebuild index", use_container_width=True):
         with st.spinner("Rebuilding FAISS index from data/ ..."):
             n = build_index()
-        st.success(f"Index rebuilt with {n} chunks.")
+            # Invalidate in-memory caches so the freshly-built index is loaded
+            _get_vectorstore.cache_clear()
+            _get_embeddings.cache_clear()
+        st.success(f"Index rebuilt with {n} chunks. Ask your question again.")
 
     index_ready = Path(INDEX_DIR).exists()
-    st.write("Index status:", "✅ ready" if index_ready else "❌ missing (run `python ingest.py`)")
+    st.write("Index status:", "✅ ready" if index_ready else "⏳ building on first run...")
+
+# Auto-build the FAISS index on first startup (useful for cloud deploys
+# where the vectorstore/ folder is gitignored and not shipped with the repo).
+if not Path(INDEX_DIR).exists():
+    with st.spinner("First-time setup: building vector index from data/ ..."):
+        build_index()
 
 # ---- Chat state -------------------------------------------------------------
 if "messages" not in st.session_state:
